@@ -1,0 +1,3 @@
+require 'webview'
+
+webview_run("WebView example", "https://nelua.io", 800, 600, 1)

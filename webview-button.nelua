@@ -1,0 +1,26 @@
+require 'libs.webview'
+
+local function invoke_cb(w: *webview, arg: cstring)
+  print("Callback called with '%s'\n", arg)
+end
+
+local wv: webview = {
+  url = [[data:text/html,
+<!DOCTYPE html><html><body>
+  <p id="sentence">It works !</p>
+  <button onclick="window.external.invoke('Hi')">Callback</button>
+</body></html>
+]],
+  title = "Button example",
+  width = 800,
+  height = 600,
+  resizable = 1,
+  debug = 1,
+  external_invoke_cb = invoke_cb
+}
+
+local r = webview_init(&wv)
+while r == 0 do
+  r = webview_loop(&wv, 1)
+end
+webview_exit(&wv)
