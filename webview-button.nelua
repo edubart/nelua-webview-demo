@@ -1,7 +1,7 @@
 require 'libs.webview'
 
 local function invoke_cb(w: *webview, arg: cstring)
-  print("Callback called with '%s'\n", arg)
+  print("Callback called with\n", arg)
 end
 
 local wv: webview = {
