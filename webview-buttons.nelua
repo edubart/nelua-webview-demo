@@ -1,5 +1,6 @@
 require 'os'
 require 'math'
+require 'string'
 require 'libs.webview'
 
 local font_bold: boolean = false
@@ -19,8 +20,13 @@ local function invoke_cb(wv: *webview, value: cstring)
     webview_set_fullscreen(wv, 1)
   elseif value == 'exit_fullscreen' then
     webview_set_fullscreen(wv, 0)
+  elseif value == 'dispatch' then
+    webview_dispatch(wv, function(wv: *webview, value: pointer)
+      print('dispatched '..(@cstring)(value))
+    end, 'test'_cstring)
+  elseif value == 'dialog' then
+    webview_dialog(wv, WEBVIEW_DIALOG_TYPE_ALERT, WEBVIEW_DIALOG_FLAG_WARNING, 'Alert', 'System alert example', nilptr, 0)
   elseif value == 'terminate' then
-    print 'terminate'
     webview_terminate(wv)
   elseif string.find(value, '^title=') then
     webview_set_title(wv, string.sub(value, 7))
@@ -29,28 +35,50 @@ local function invoke_cb(wv: *webview, value: cstring)
   end
 end
 
-local wv: webview = {
-  url = [[data:text/html,<!DOCTYPE html>
+local function encode_url(url: string): string
+  local sb: stringbuilder
+  sb:prepare(#url)
+  for i=1,#url do
+    local c: byte = url[i]
+    if (c >= 'A'_b and c <= 'Z'_b) or
+       (c >= 'a'_b and c <= 'z'_b) or
+       (c >= '0'_b and c <= '9'_b) or
+       c == '-'_b or c == '_' or c == '.' or c == '~' then
+      sb:writebyte(c)
+    else
+      sb:writef('%%%02x', c)
+    end
+  end
+  return sb:promote()
+end
+
+local content = 'data:text/html,'..encode_url[[
+<!DOCTYPE html>
 <html>
   <body>
     <p id="sentence">It works !</p>
     <button onclick="window.external.invoke('title=Changed Title')">Change Title</button>
     <button onclick="window.external.invoke('print_date')">Print Date</button>
     <button onclick="window.external.invoke('show_date')">Show Date</button>
+    <button onclick="window.external.invoke('dialog')">Dialog</button>
     <br/>
     <button onclick="window.external.invoke('change_background')">Change Background</button>
     <button onclick="window.external.invoke('change_font')">Change Font</button>
+    <button onclick="window.external.invoke('dispatch')">Dispatch Message</button>
     <br/>
-    <button title="Reload" onclick="window.location.reload()">Reload</button>
-    <button title="Toggle fullscreen" onclick="fullscreen = !fullscreen; window.external.invoke(fullscreen ? 'fullscreen' : 'exit_fullscreen')">Toggle Fullscreen</button>
-    <button title="Terminate" onclick="window.external.invoke('terminate')">Terminate</button>
+    <button onclick="window.location.reload()">Reload &#x21bb;</button>
+    <button onclick="fullscreen = !fullscreen; window.external.invoke(fullscreen ? 'fullscreen' : 'exit_fullscreen')">Toggle Fullscreen &#x2922;</button>
+    <button onclick="window.external.invoke('terminate')">Terminate &#x2716</button>
     <br/>
   </body>
   <script type="text/javascript">
   var fullscreen = false;
   </script>
 </html>
-]],
+]]
+
+local wv: webview = {
+  url = content,
   title = "Button example",
   width = 800,
   height = 600,
