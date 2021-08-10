@@ -1,0 +1,49 @@
+require 'os'
+require 'math'
+require 'string'
+require 'libs.webview'
+
+-- Callback called when a TODO item change
+local function invoke_cb(wv: *webview, value: cstring)
+  print('got callback', value)
+end
+
+##[==[
+-- Utilities used at compile time
+local fs = require 'nelua.utils.fs'
+local pegger = require 'nelua.utils.pegger'
+
+-- Load HTML content.
+local content = fs.readfile('assets/todo.html')
+
+-- Inline ad JS/Lua/CSS dependencies
+content = pegger.substitute(content, {
+  ['bootstrap_min_css'] = fs.readfile('assets/js/bootstrap.min.css'),
+  ['bootstrap_bundle_min_js'] = fs.readfile('assets/js/bootstrap.bundle.min.js'),
+  ['fengari_web_js'] = fs.readfile('assets/js/fengari-web.js'),
+  ['vue_min_js'] = fs.readfile('assets/js/vue.min.js'),
+  ['jsutil_lua'] = fs.readfile('assets/jsutil.lua'),
+  ['todo_lua'] = fs.readfile('assets/todo.lua'),
+})
+
+-- Escape special characters for URL
+content = 'data:text/html,'..content:gsub("[ %c!#$%%&'()*+,/:;=?@%[%]]", function(c)
+  return ('%%%02X'):format(string.byte(c))
+end)
+]==]
+
+local wv: webview = {
+  url = #[content]#,
+  title = "My TODO",
+  width = 800,
+  height = 600,
+  resizable = 1,
+  debug = 1,
+  external_invoke_cb = invoke_cb
+}
+
+local r = webview_init(&wv)
+while r == 0 do
+  r = webview_loop(&wv, 1)
+end
+webview_exit(&wv)

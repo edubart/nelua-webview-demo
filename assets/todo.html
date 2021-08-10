@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <script type="text/javascript">$(bootstrap_bundle_min_js)</script>
+    <script type="text/javascript">$(fengari_web_js)</script>
+    <script type="text/javascript">$(vue_min_js)</script>
+    <style>$(bootstrap_min_css)</style>
+    <title>TODO App</title>
+  </head>
+  <body class="bg-light">
+    <div class="container">
+      <!-- App title -->
+      <div class="py-3 text-center">
+        <h1 class="fw-bold">My TODO</h1>
+        <div class="col-lg-6 mx-auto">
+          <p class="lead">Todo sample app.</p>
+        </div>
+      </div>
+      <!-- TODO -->
+      <div id="app" class="row">
+        <div class="col-lg-8 mx-auto">
+          <!-- TODO items -->
+          <div class="row mb-3">
+            <ul class="list-group">
+              <li v-for="todo in todos" class="list-group-item">
+                <input v-on:change="item_changed(todo)" class="form-check-input me-1" type="checkbox">
+                {{todo.text}}
+              </li>
+            </ul>
+          </div>
+          <!-- TODO buttons -->
+          <form class="row mb-3">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Description" v-model="text">
+              <button class="btn btn-primary" type="button" id="button-add" v-on:click="add_clicked">Add</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script type="application/lua">$(jsutil_lua)</script>
+    <script type="application/lua">$(todo_lua)</script>
+  </body>
+</html>
